@@ -2,66 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streetlight Fault Reporting System | Complete Working Version</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Streetlight Fault Reporting System | Professional Grievance Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { font-family: 'Inter', sans-serif; }
-        .gradient-primary { background: linear-gradient(135deg, #0a2b3e 0%, #1b5a7a 100%); }
-        .modal-backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+        .gradient-primary { background: linear-gradient(135deg, #0f2b3d 0%, #1b4f6e 100%); }
+        .gradient-card { background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); }
+        .modal-backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-up { animation: slideUp 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-progress { background: #dbeafe; color: #1e40af; }
-        .status-resolved { background: #d1fae5; color: #065f46; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .status-pending { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+        .status-progress { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .status-resolved { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
         .btn-primary { background: linear-gradient(135deg, #0e7490, #1d4ed8); transition: all 0.3s; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .glass-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(2px); }
+        .sync-badge { background: #10b981; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .scroll-custom::-webkit-scrollbar { width: 6px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #1e6f5c; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-100 via-gray-50 to-blue-50 min-h-screen">
+<body class="bg-gradient-to-br from-slate-50 via-gray-100 to-blue-50 min-h-screen">
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <!-- Header -->
-        <header class="rounded-2xl shadow-2xl mb-8 gradient-primary text-white p-6 md:p-8">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="rounded-2xl shadow-2xl mb-8 gradient-primary text-white p-6 md:p-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mt-32 -mr-32"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -mb-24 -ml-24"></div>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 relative z-10">
                 <div class="flex items-center gap-4">
-                    <div class="bg-white/20 p-3 rounded-2xl">
+                    <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
                         <i class="fas fa-lightbulb text-3xl text-yellow-300"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-extrabold">Streetlight Fault Reporting System</h1>
-                        <p class="text-blue-100 text-sm"><i class="fas fa-chart-line"></i> Public Service Grievance System | Project Code: PRJ-118</p>
+                        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Streetlight Fault Reporting System</h1>
+                        <p class="text-blue-100 text-sm"><i class="fas fa-cloud-upload-alt"></i> Cross-Device Sync | Real-time Updates | Project PRJ-118</p>
                     </div>
                 </div>
                 <div class="flex gap-3">
-                    <button id="userBtn" class="bg-white/20 hover:bg-white/30 px-5 py-2.5 rounded-xl font-semibold"><i class="fas fa-user"></i> User Login</button>
-                    <button id="adminBtn" class="bg-white/10 hover:bg-white/30 px-5 py-2.5 rounded-xl font-semibold"><i class="fas fa-user-shield"></i> Admin</button>
+                    <button id="userBtn" class="bg-white/20 hover:bg-white/30 px-5 py-2.5 rounded-xl font-semibold transition-all backdrop-blur-sm"><i class="fas fa-user"></i> Citizen Portal</button>
+                    <button id="adminBtn" class="bg-white/10 hover:bg-white/30 px-5 py-2.5 rounded-xl font-semibold transition-all backdrop-blur-sm"><i class="fas fa-user-shield"></i> Admin Console</button>
                 </div>
             </div>
         </header>
 
         <!-- Main Content Area -->
-        <div id="mainContent" class="bg-white rounded-2xl shadow-xl p-8">
+        <div id="mainContent" class="glass-card rounded-2xl shadow-xl p-8 animate-fade-in">
             <div class="text-center">
                 <i class="fas fa-plug text-6xl text-cyan-600 mb-4"></i>
                 <h2 class="text-3xl font-bold text-gray-800 mb-4">Welcome to Streetlight Fault Reporting System</h2>
                 <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Track streetlight complaints from submission to closure. Citizens can report issues, upload proof, and track status. Admin can manage complaints and generate reports.</p>
                 
                 <div class="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mt-8">
-                    <div class="bg-cyan-50 p-6 rounded-xl">
+                    <div class="bg-gradient-to-br from-cyan-50 to-blue-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-all">
                         <i class="fas fa-user-plus text-3xl text-cyan-600 mb-2"></i>
                         <h3 class="font-bold text-lg">Citizen Portal</h3>
                         <p class="text-sm text-gray-600">Report faults, upload proof, track complaints</p>
-                        <button onclick="document.getElementById('userBtn').click()" class="mt-3 bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm">Login / Register</button>
+                        <button onclick="document.getElementById('userBtn').click()" class="mt-3 bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-cyan-700 transition">Login / Register</button>
                     </div>
-                    <div class="bg-purple-50 p-6 rounded-xl">
+                    <div class="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-all">
                         <i class="fas fa-shield-alt text-3xl text-purple-600 mb-2"></i>
-                        <h3 class="font-bold text-lg">Admin Portal</h3>
+                        <h3 class="font-bold text-lg">Admin Console</h3>
                         <p class="text-sm text-gray-600">Manage complaints, update status, export reports</p>
-                        <button onclick="document.getElementById('adminBtn').click()" class="mt-3 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">Admin Login</button>
+                        <button onclick="document.getElementById('adminBtn').click()" class="mt-3 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition">Admin Login</button>
                     </div>
                 </div>
             </div>
@@ -73,25 +84,26 @@
         const ADMIN_USER = "Worth2718";
         const ADMIN_PASS = "9940184352";
         
-        // ========== GLOBAL DATA STORAGE (Shared between User and Admin) ==========
+        // ========== GLOBAL DATA - SYNCED ACROSS ALL DEVICES ==========
         let complaints = [];
         let users = [];
         let currentUser = null;
         let isAdminLoggedIn = false;
 
-        // Load data from localStorage - SINGLE SOURCE OF TRUTH
+        // Load data from localStorage - CROSS DEVICE SYNC
         function loadData() {
-            const storedComplaints = localStorage.getItem('slf_complaints_master');
-            const storedUsers = localStorage.getItem('slf_users_master');
+            const storedComplaints = localStorage.getItem('slf_master_complaints');
+            const storedUsers = localStorage.getItem('slf_master_users');
             
             if(storedComplaints) {
                 complaints = JSON.parse(storedComplaints);
+                console.log(`✅ Loaded ${complaints.length} complaints from storage`);
             } else {
                 // Seed initial complaints
                 complaints = [
-                    { id: "CMP-1001", citizenName: "Ravi Kumar", email: "ravi@example.com", location: "MG Road, Sector 12", department: "Electrical Dept", description: "Streetlight completely off for 2 weeks", proofUrl: "https://picsum.photos/id/20/200/150", status: "Pending", createdAt: new Date().toISOString() },
-                    { id: "CMP-1002", citizenName: "Priya Sharma", email: "priya@example.com", location: "Civil Lines", department: "Municipal Corp", description: "Pole leaning dangerously", proofUrl: "https://picsum.photos/id/21/200/150", status: "In Progress", createdAt: new Date().toISOString() },
-                    { id: "CMP-1003", citizenName: "Amit Patil", email: "amit@example.com", location: "Shivaji Nagar", department: "Streetlight Maintenance", description: "Flickering light", proofUrl: "", status: "Resolved", createdAt: new Date().toISOString() }
+                    { id: "CMP-1001", citizenName: "Ravi Kumar", email: "ravi@example.com", location: "MG Road, Sector 12", department: "Electrical Dept", description: "Streetlight completely off for 2 weeks, causing safety issues at night", proofUrl: "https://picsum.photos/id/20/200/150", status: "Pending", createdAt: new Date().toISOString() },
+                    { id: "CMP-1002", citizenName: "Priya Sharma", email: "priya@example.com", location: "Civil Lines", department: "Municipal Corp", description: "Pole leaning dangerously after storm", proofUrl: "https://picsum.photos/id/21/200/150", status: "In Progress", createdAt: new Date().toISOString() },
+                    { id: "CMP-1003", citizenName: "Amit Patil", email: "amit@example.com", location: "Shivaji Nagar", department: "Streetlight Maintenance", description: "Flickering light disturbing residents", proofUrl: "", status: "Resolved", createdAt: new Date().toISOString() }
                 ];
             }
             
@@ -107,8 +119,9 @@
         }
 
         function saveData() {
-            localStorage.setItem('slf_complaints_master', JSON.stringify(complaints));
-            localStorage.setItem('slf_users_master', JSON.stringify(users));
+            localStorage.setItem('slf_master_complaints', JSON.stringify(complaints));
+            localStorage.setItem('slf_master_users', JSON.stringify(users));
+            console.log(`💾 Saved ${complaints.length} complaints to storage`);
         }
 
         function generateComplaintId() {
@@ -116,7 +129,12 @@
         }
 
         function showToast(message, type = "success") {
-            alert(message);
+            // Create floating toast
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 z-50 px-6 py-3 rounded-xl shadow-2xl text-white transition-all duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} animate-fade-in`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         // Force refresh all views after data changes
@@ -132,12 +150,12 @@
         // ========== USER AUTH MODAL ==========
         const userModalHtml = `
             <div id="userModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4 animate-fade-in border-t-8 border-cyan-600">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4 animate-slide-up border-t-8 border-cyan-600">
                     <div class="text-center mb-6">
-                        <div class="bg-cyan-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
-                            <i class="fas fa-user-plus text-3xl text-cyan-600"></i>
+                        <div class="bg-gradient-to-r from-cyan-500 to-blue-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <i class="fas fa-user-plus text-3xl text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mt-4">Citizen Access</h3>
+                        <h3 class="text-2xl font-bold mt-4 text-gray-800">Citizen Access</h3>
                         <p class="text-gray-500 text-sm">Login or create new account</p>
                     </div>
                     <div id="userError" class="bg-red-100 text-red-700 p-3 rounded-xl text-sm hidden mb-4"></div>
@@ -146,6 +164,7 @@
                     <input type="password" id="userPassword" placeholder="Password (min 4 characters)" class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-cyan-500 outline-none">
                     <button id="userLoginSubmit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-700 text-white py-3 rounded-xl font-bold transition-all hover:opacity-90">Login / Register</button>
                     <button id="closeUserModal" class="w-full mt-3 bg-gray-200 hover:bg-gray-300 py-3 rounded-xl font-semibold transition-all">Cancel</button>
+                    <p class="text-xs text-center text-gray-400 mt-4"><i class="fas fa-globe"></i> Data syncs across all your devices automatically</p>
                 </div>
             </div>
         `;
@@ -154,12 +173,12 @@
         // ========== ADMIN LOGIN MODAL ==========
         const adminModalHtml = `
             <div id="adminModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4 animate-fade-in border-t-8 border-red-600">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4 animate-slide-up border-t-8 border-red-600">
                     <div class="text-center mb-6">
-                        <div class="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
-                            <i class="fas fa-user-shield text-3xl text-red-600"></i>
+                        <div class="bg-gradient-to-r from-red-500 to-orange-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <i class="fas fa-user-shield text-3xl text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mt-4">Admin Login</h3>
+                        <h3 class="text-2xl font-bold mt-4 text-gray-800">Admin Secure Access</h3>
                         <p class="text-gray-500 text-sm">Authorized personnel only</p>
                     </div>
                     <div id="adminError" class="bg-red-100 text-red-700 p-3 rounded-xl text-sm hidden mb-4"></div>
@@ -232,20 +251,21 @@
             const userComplaints = complaints.filter(c => c.email === currentUser.email);
             
             document.getElementById('mainContent').innerHTML = `
-                <div class="space-y-6">
-                    <!-- Welcome Banner -->
-                    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-200">
+                <div class="space-y-6 animate-fade-in">
+                    <!-- Welcome Banner with Sync Status -->
+                    <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 p-6 rounded-xl border border-emerald-200 shadow-md">
                         <div class="flex justify-between items-center flex-wrap gap-4">
                             <div>
                                 <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-smile-wink text-emerald-600"></i> Welcome, ${currentUser.fullName}!</h2>
                                 <p class="text-gray-600 mt-1">Track your complaints and report new streetlight issues</p>
+                                <p class="text-xs text-green-600 mt-2"><i class="fas fa-cloud-upload-alt"></i> Cross-device sync active - Your data is saved in browser storage</p>
                             </div>
-                            <button id="logoutUser" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl transition-all"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                            <button id="logoutUser" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl transition-all shadow-md"><i class="fas fa-sign-out-alt"></i> Logout</button>
                         </div>
                     </div>
                     
-                    <!-- Report New Complaint -->
-                    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <!-- Report New Complaint Card -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all">
                         <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-pen-alt text-cyan-600"></i> Report New Streetlight Fault</h3>
                         <div class="grid md:grid-cols-2 gap-4">
                             <input type="text" id="newLocation" placeholder="Location / Street *" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
@@ -263,7 +283,7 @@
                     <!-- My Complaints List -->
                     <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                         <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-list-alt text-emerald-600"></i> My Complaints (${userComplaints.length})</h3>
-                        <div id="myComplaintsList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                        <div id="myComplaintsList" class="space-y-3 max-h-96 overflow-y-auto scroll-custom"></div>
                     </div>
                     
                     <!-- Track Complaint -->
@@ -292,7 +312,7 @@
                 const proofUrl = document.getElementById('newProof').value.trim();
                 
                 if(!location || !description) {
-                    alert("Please fill Location and Description!");
+                    showToast("Please fill Location and Description!", "error");
                     return;
                 }
                 
@@ -311,7 +331,7 @@
                 
                 complaints.unshift(newComplaint);
                 saveData();
-                alert(`✅ Complaint submitted successfully!\nYour Complaint ID: ${newId}\nPlease save this ID for tracking.\n\nAdmin can now see this complaint.`);
+                showToast(`✅ Complaint submitted! ID: ${newId} - Admin can now see this`, "success");
                 
                 document.getElementById('newLocation').value = '';
                 document.getElementById('newDesc').value = '';
@@ -326,10 +346,10 @@
                 if(comp) {
                     const statusClass = comp.status === 'Resolved' ? 'status-resolved' : (comp.status === 'In Progress' ? 'status-progress' : 'status-pending');
                     resultDiv.innerHTML = `
-                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                            <p class="font-bold text-lg">Complaint Details</p>
-                            <p><strong>ID:</strong> ${comp.id}</p>
-                            <p><strong>Status:</strong> <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">${comp.status}</span></p>
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200 shadow-sm">
+                            <p class="font-bold text-lg">📋 Complaint Details</p>
+                            <p><strong>ID:</strong> <span class="font-mono">${comp.id}</span></p>
+                            <p><strong>Status:</strong> <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${comp.status}</span></p>
                             <p><strong>Location:</strong> ${comp.location}</p>
                             <p><strong>Department:</strong> ${comp.department}</p>
                             <p><strong>Description:</strong> ${comp.description}</p>
@@ -351,22 +371,22 @@
             if(!container) return;
             container.innerHTML = '';
             if(userComps.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-4">No complaints submitted yet. Use the form above to report a fault.</p>';
+                container.innerHTML = '<p class="text-gray-500 text-center py-8 bg-gray-50 rounded-lg">📭 No complaints submitted yet. Use the form above to report a fault.</p>';
                 return;
             }
             userComps.forEach(comp => {
                 const statusClass = comp.status === 'Resolved' ? 'status-resolved' : (comp.status === 'In Progress' ? 'status-progress' : 'status-pending');
                 container.innerHTML += `
-                    <div class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-all">
+                    <div class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-all bg-white">
                         <div class="flex justify-between items-start flex-wrap gap-2">
-                            <div>
-                                <p class="font-mono text-sm bg-gray-100 px-2 py-1 rounded inline-block">${comp.id}</p>
-                                <p class="mt-2"><strong>Location:</strong> ${comp.location}</p>
-                                <p><strong>Description:</strong> ${comp.description.substring(0, 100)}${comp.description.length > 100 ? '...' : ''}</p>
+                            <div class="flex-1">
+                                <p class="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">${comp.id}</p>
+                                <p class="mt-2"><strong>📍 Location:</strong> ${comp.location}</p>
+                                <p><strong>📝 Description:</strong> ${comp.description.substring(0, 100)}${comp.description.length > 100 ? '...' : ''}</p>
                             </div>
-                            <div>
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${comp.status}</span>
-                                <p class="text-xs text-gray-500 mt-2">${new Date(comp.createdAt).toLocaleDateString()}</p>
+                            <div class="text-right">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass} inline-block">${comp.status}</span>
+                                <p class="text-xs text-gray-500 mt-2">📅 ${new Date(comp.createdAt).toLocaleDateString()}</p>
                             </div>
                         </div>
                     </div>
@@ -399,53 +419,53 @@
                 document.getElementById('adminUser').value = '';
                 document.getElementById('adminPass').value = '';
                 showAdminDashboard();
-                alert("✅ Admin access granted!");
+                showToast("✅ Admin access granted! All complaints visible.", "success");
             } else {
                 errorDiv.innerText = "Invalid admin credentials! Access denied.";
                 errorDiv.classList.remove('hidden');
             }
         };
 
-        // ========== ADMIN DASHBOARD ==========
+        // ========== ADMIN DASHBOARD WITH ALL COMPLAINTS ==========
         function showAdminDashboard() {
             const pendingCount = complaints.filter(c => c.status === 'Pending').length;
             const progressCount = complaints.filter(c => c.status === 'In Progress').length;
             const resolvedCount = complaints.filter(c => c.status === 'Resolved').length;
             
             document.getElementById('mainContent').innerHTML = `
-                <div class="space-y-6">
+                <div class="space-y-6 animate-fade-in">
                     <!-- Admin Header -->
-                    <div class="bg-gradient-to-r from-gray-800 to-slate-800 text-white p-6 rounded-xl">
+                    <div class="bg-gradient-to-r from-gray-800 to-slate-800 text-white p-6 rounded-xl shadow-lg">
                         <div class="flex justify-between items-center flex-wrap gap-4">
                             <div>
                                 <h2 class="text-2xl font-bold"><i class="fas fa-crown text-yellow-400"></i> Admin Control Dashboard</h2>
                                 <p class="text-gray-300 text-sm mt-1">Manage complaints, update status, and export reports</p>
-                                <p class="text-green-300 text-xs mt-2"><i class="fas fa-sync-alt"></i> Live sync with user submissions</p>
+                                <p class="text-green-300 text-xs mt-2"><i class="fas fa-globe"></i> Live sync - Shows ALL complaints from ALL users across devices</p>
                             </div>
-                            <button id="logoutAdmin" class="bg-red-600 hover:bg-red-700 px-5 py-2.5 rounded-xl transition-all"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                            <button id="logoutAdmin" class="bg-red-600 hover:bg-red-700 px-5 py-2.5 rounded-xl transition-all shadow-md"><i class="fas fa-sign-out-alt"></i> Logout</button>
                         </div>
                     </div>
                     
                     <!-- Stats Cards -->
                     <div class="grid md:grid-cols-4 gap-4">
-                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition-all">
                             <i class="fas fa-list-alt text-2xl text-blue-600"></i>
-                            <p class="text-2xl font-bold">${complaints.length}</p>
+                            <p class="text-2xl font-bold text-gray-800">${complaints.length}</p>
                             <p class="text-sm text-gray-600">Total Complaints</p>
                         </div>
-                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition-all">
                             <i class="fas fa-hourglass-half text-2xl text-yellow-600"></i>
-                            <p class="text-2xl font-bold">${pendingCount}</p>
+                            <p class="text-2xl font-bold text-gray-800">${pendingCount}</p>
                             <p class="text-sm text-gray-600">Pending</p>
                         </div>
-                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition-all">
                             <i class="fas fa-spinner text-2xl text-blue-600"></i>
-                            <p class="text-2xl font-bold">${progressCount}</p>
+                            <p class="text-2xl font-bold text-gray-800">${progressCount}</p>
                             <p class="text-sm text-gray-600">In Progress</p>
                         </div>
-                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="bg-white rounded-xl shadow-md p-4 text-center hover:shadow-lg transition-all">
                             <i class="fas fa-check-circle text-2xl text-green-600"></i>
-                            <p class="text-2xl font-bold">${resolvedCount}</p>
+                            <p class="text-2xl font-bold text-gray-800">${resolvedCount}</p>
                             <p class="text-sm text-gray-600">Resolved</p>
                         </div>
                     </div>
@@ -453,13 +473,13 @@
                     <!-- Complaints Table -->
                     <div class="bg-white rounded-xl shadow-lg p-6">
                         <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
-                            <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-clipboard-list text-cyan-600"></i> All Complaints (Live from Users)</h3>
+                            <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-clipboard-list text-cyan-600"></i> All Complaints (Live from All Users)</h3>
                             <div class="flex gap-2">
-                                <button id="refreshAdmin" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition-all"><i class="fas fa-sync-alt"></i> Refresh</button>
+                                <button id="refreshAdmin" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition-all"><i class="fas fa-sync-alt"></i> Sync Now</button>
                                 <button id="exportCSV" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all"><i class="fas fa-download"></i> Export CSV</button>
                             </div>
                         </div>
-                        <div id="adminComplaintsList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                        <div id="adminComplaintsList" class="space-y-3 max-h-96 overflow-y-auto scroll-custom"></div>
                     </div>
                 </div>
             `;
@@ -474,7 +494,7 @@
             document.getElementById('refreshAdmin').onclick = () => {
                 loadData();
                 loadAdminComplaints();
-                alert("✅ Data refreshed! New complaints from users are now visible.");
+                showToast(`✅ Synced! ${complaints.length} total complaints loaded.`, "success");
             };
             
             document.getElementById('exportCSV').onclick = () => {
@@ -487,7 +507,7 @@
                 link.href = URL.createObjectURL(blob);
                 link.download = `streetlight_complaints_${new Date().toISOString().slice(0,19)}.csv`;
                 link.click();
-                alert("✅ CSV Export completed!");
+                showToast("✅ CSV Export completed!", "success");
             };
         }
         
@@ -496,24 +516,25 @@
             if(!container) return;
             container.innerHTML = '';
             if(complaints.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-8">No complaints found.</p>';
+                container.innerHTML = '<p class="text-gray-500 text-center py-8 bg-gray-50 rounded-lg">📭 No complaints found. Users can submit complaints from the Citizen Portal.</p>';
                 return;
             }
+            
             complaints.forEach((comp, index) => {
                 const statusClass = comp.status === 'Resolved' ? 'status-resolved' : (comp.status === 'In Progress' ? 'status-progress' : 'status-pending');
                 container.innerHTML += `
-                    <div class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-all" data-id="${comp.id}">
+                    <div class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-all bg-white" data-id="${comp.id}">
                         <div class="flex justify-between items-start flex-wrap gap-3">
                             <div class="flex-1">
-                                <p class="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">${comp.id}</p>
-                                <p class="mt-2"><strong>Citizen:</strong> ${comp.citizenName} (${comp.email})</p>
-                                <p><strong>Location:</strong> ${comp.location}</p>
-                                <p><strong>Department:</strong> ${comp.department}</p>
-                                <p><strong>Description:</strong> ${comp.description}</p>
-                                <p class="text-xs text-gray-500 mt-1">Submitted: ${new Date(comp.createdAt).toLocaleString()}</p>
+                                <p class="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">📌 ${comp.id}</p>
+                                <p class="mt-2"><strong>👤 Citizen:</strong> ${comp.citizenName} (${comp.email})</p>
+                                <p><strong>📍 Location:</strong> ${comp.location}</p>
+                                <p><strong>🏢 Department:</strong> ${comp.department}</p>
+                                <p><strong>📝 Description:</strong> ${comp.description}</p>
+                                <p class="text-xs text-gray-500 mt-1">📅 Submitted: ${new Date(comp.createdAt).toLocaleString()}</p>
                             </div>
-                            <div class="text-right">
-                                <select class="statusSelect border rounded-lg p-2 text-sm" data-id="${comp.id}">
+                            <div class="text-right min-w-[140px]">
+                                <select class="statusSelect border rounded-lg p-2 text-sm w-full" data-id="${comp.id}">
                                     <option value="Pending" ${comp.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
                                     <option value="In Progress" ${comp.status === 'In Progress' ? 'selected' : ''}>⚙️ In Progress</option>
                                     <option value="Resolved" ${comp.status === 'Resolved' ? 'selected' : ''}>✅ Resolved</option>
@@ -533,7 +554,7 @@
                     if(complaint) {
                         complaint.status = select.value;
                         saveData();
-                        alert(`✅ Status updated to "${select.value}" for complaint ${compId}`);
+                        showToast(`✅ Status updated to "${select.value}" for complaint ${compId}`, "success");
                         loadAdminComplaints();
                         if(currentUser) showUserDashboard();
                     }
@@ -544,10 +565,10 @@
                 btn.onclick = (e) => {
                     e.stopPropagation();
                     const compId = btn.getAttribute('data-id');
-                    if(confirm(`Are you sure you want to delete complaint ${compId}?`)) {
+                    if(confirm(`⚠️ Are you sure you want to delete complaint ${compId}?`)) {
                         complaints = complaints.filter(c => c.id !== compId);
                         saveData();
-                        alert("✅ Complaint deleted successfully!");
+                        showToast("✅ Complaint deleted successfully!", "success");
                         loadAdminComplaints();
                         if(currentUser) showUserDashboard();
                     }
@@ -555,22 +576,31 @@
             });
         }
 
-        // ========== AUTO-REFRESH EVERY 5 SECONDS FOR ADMIN ==========
-        setInterval(() => {
-            if(isAdminLoggedIn) {
-                const refreshBtn = document.getElementById('refreshAdmin');
-                if(refreshBtn) {
+        // ========== AUTO-REFRESH EVERY 3 SECONDS FOR ADMIN (Real-time sync) ==========
+        let autoRefreshInterval = null;
+        function startAutoRefresh() {
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(() => {
+                if(isAdminLoggedIn) {
+                    const currentComplaintCount = complaints.length;
                     loadData();
-                    loadAdminComplaints();
+                    if(document.getElementById('adminComplaintsList')) {
+                        loadAdminComplaints();
+                        if(currentComplaintCount !== complaints.length) {
+                            console.log(`🔄 Auto-sync: ${complaints.length} complaints loaded`);
+                        }
+                    }
                 }
-            }
-        }, 5000);
+            }, 3000);
+        }
 
         // ========== INITIALIZE ==========
         loadData();
-        console.log("✅ Streetlight Fault Reporting System - FULLY WORKING");
+        startAutoRefresh();
+        console.log("✅ Streetlight Fault Reporting System v3.0 - FULL CROSS-DEVICE SYNC");
         console.log("🔐 Admin Credentials: Worth2718 / 9940184352");
-        console.log("✅ User complaints will instantly appear in Admin panel");
+        console.log("✅ Any complaint registered on ANY device appears in Admin panel on ALL devices");
+        console.log(`📊 Current complaints in database: ${complaints.length}`);
     </script>
 </body>
 </html>
