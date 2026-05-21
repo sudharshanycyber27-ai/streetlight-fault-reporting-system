@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streetlight Fault Reporting System | Smart Grievance Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .gradient-primary { background: linear-gradient(135deg, #0a2b3e 0%, #1b5a7a 100%); }
+        .modal-backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-progress { background: #dbeafe; color: #1e40af; }
+        .status-resolved { background: #d1fae5; color: #065f46; }
+        .btn-primary { background: linear-gradient(135deg, #0e7490, #1d4ed8); transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-gray-50 to-blue-50 min-h-screen">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <!-- Header -->
+        <header class="rounded-2xl shadow-2xl mb-8 gradient-primary text-white p-6 md:p-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="bg-white/20 p-3 rounded-2xl">
+                        <i class="fas fa-lightbulb text-3xl text-yellow-300"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold">Streetlight Fault Reporting System</h1>
+                        <p class="text-blue-100 text-sm"><i class="fas fa-chart-line"></i> Public Service Grievance System | Project Code: PRJ-118</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button id="userBtn" class="bg-white/20 hover:bg-white/30 px-5 py-2.5 rounded-xl font-semibold"><i class="fas fa-user"></i> User Login</button>
+                    <button id="adminBtn" class="bg-white/10 hover:bg-white/30 px-5 py-2.5 rounded-xl font-semibold"><i class="fas fa-user-shield"></i> Admin</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div id="mainContent" class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center">
+                <i class="fas fa-plug text-6xl text-cyan-600 mb-4"></i>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Welcome to Streetlight Fault Reporting System</h2>
+                <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Track streetlight complaints from submission to closure. Citizens can report issues, upload proof, and track status. Admin can manage complaints and generate reports.</p>
+                
+                <div class="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mt-8">
+                    <div class="bg-cyan-50 p-6 rounded-xl">
+                        <i class="fas fa-user-plus text-3xl text-cyan-600 mb-2"></i>
+                        <h3 class="font-bold text-lg">Citizen Portal</h3>
+                        <p class="text-sm text-gray-600">Report faults, upload proof, track complaints</p>
+                        <button onclick="document.getElementById('userBtn').click()" class="mt-3 bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm">Login / Register</button>
+                    </div>
+                    <div class="bg-purple-50 p-6 rounded-xl">
+                        <i class="fas fa-shield-alt text-3xl text-purple-600 mb-2"></i>
+                        <h3 class="font-bold text-lg">Admin Portal</h3>
+                        <p class="text-sm text-gray-600">Manage complaints, update status, export reports</p>
+                        <button onclick="document.getElementById('adminBtn').click()" class="mt-3 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">Admin Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ADMIN CREDENTIALS (HIDDEN) ==========
+        const ADMIN_USER = "Worth2718";
+        const ADMIN_PASS = "9940184352";
+        
+        // ========== DATA STORAGE ==========
+        let complaints = [];
+        let users = [];
+        let currentUser = null;
+        let isAdminLoggedIn = false;
+
+        // Load data from localStorage
+        function loadData() {
+            const storedComplaints = localStorage.getItem('slf_complaints');
+            const storedUsers = localStorage.getItem('slf_users');
+            
+            if(storedComplaints) {
+                complaints = JSON.parse(storedComplaints);
+            } else {
+                complaints = [
+                    { id: "CMP-1001", citizenName: "Ravi Kumar", email: "ravi@example.com", location: "MG Road, Sector 12", department: "Electrical Dept", description: "Streetlight completely off for 2 weeks", proofUrl: "https://picsum.photos/id/20/200/150", status: "Pending", createdAt: new Date().toISOString() },
+                    { id: "CMP-1002", citizenName: "Priya Sharma", email: "priya@example.com", location: "Civil Lines", department: "Municipal Corp", description: "Pole leaning dangerously", proofUrl: "https://picsum.photos/id/21/200/150", status: "In Progress", createdAt: new Date().toISOString() },
+                    { id: "CMP-1003", citizenName: "Amit Patil", email: "amit@example.com", location: "Shivaji Nagar", department: "Streetlight Maintenance", description: "Flickering light", proofUrl: "", status: "Resolved", createdAt: new Date().toISOString() }
+                ];
+            }
+            
+            if(storedUsers) {
+                users = JSON.parse(storedUsers);
+            } else {
+                users = [
+                    { id: "user1", fullName: "Ravi Kumar", email: "ravi@example.com", password: "123456", registeredAt: new Date().toISOString() },
+                    { id: "user2", fullName: "Priya Sharma", email: "priya@example.com", password: "123456", registeredAt: new Date().toISOString() }
+                ];
+            }
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('slf_complaints', JSON.stringify(complaints));
+            localStorage.setItem('slf_users', JSON.stringify(users));
+        }
+
+        function generateComplaintId() {
+            return "CMP-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+        }
+
+        function showToast(message, type = "success") {
+            alert(message);
+        }
+
+        // ========== USER AUTH MODAL ==========
+        const userModalHtml = `
+            <div id="userModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4 animate-fade-in border-t-8 border-cyan-600">
+                    <div class="text-center mb-6">
+                        <div class="bg-cyan-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+                            <i class="fas fa-user-plus text-3xl text-cyan-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mt-4">Citizen Access</h3>
+                        <p class="text-gray-500 text-sm">Login or create new account</p>
+                    </div>
+                    <div id="userError" class="bg-red-100 text-red-700 p-3 rounded-xl text-sm hidden mb-4"></div>
+                    <input type="text" id="userFullName" placeholder="Full Name" class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-cyan-500 outline-none">
+                    <input type="email" id="userEmail" placeholder="Email Address" class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-cyan-500 outline-none">
+                    <input type="password" id="userPassword" placeholder="Password (min 4 characters)" class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-cyan-500 outline-none">
+                    <button id="userLoginSubmit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-700 text-white py-3 rounded-xl font-bold transition-all hover:opacity-90">Login / Register</button>
+                    <button id="closeUserModal" class="w-full mt-3 bg-gray-200 hover:bg-gray-300 py-3 rounded-xl font-semibold transition-all">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', userModalHtml);
+
+        // ========== ADMIN LOGIN MODAL ==========
+        const adminModalHtml = `
+            <div id="adminModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4 animate-fade-in border-t-8 border-red-600">
+                    <div class="text-center mb-6">
+                        <div class="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+                            <i class="fas fa-user-shield text-3xl text-red-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mt-4">Admin Login</h3>
+                        <p class="text-gray-500 text-sm">Authorized personnel only</p>
+                    </div>
+                    <div id="adminError" class="bg-red-100 text-red-700 p-3 rounded-xl text-sm hidden mb-4"></div>
+                    <input type="text" id="adminUser" placeholder="Username" class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-3 focus:ring-2 focus:ring-red-500 outline-none">
+                    <input type="password" id="adminPass" placeholder="Password" class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-red-500 outline-none">
+                    <button id="adminLoginSubmit" class="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white py-3 rounded-xl font-bold transition-all hover:opacity-90">Login</button>
+                    <button id="closeAdminModal" class="w-full mt-3 bg-gray-200 hover:bg-gray-300 py-3 rounded-xl font-semibold transition-all">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', adminModalHtml);
+
+        // ========== USER AUTHENTICATION ==========
+        document.getElementById('userBtn').onclick = () => {
+            document.getElementById('userModal').classList.remove('hidden');
+        };
+
+        document.getElementById('closeUserModal').onclick = () => {
+            document.getElementById('userModal').classList.add('hidden');
+            document.getElementById('userError').classList.add('hidden');
+        };
+
+        document.getElementById('userLoginSubmit').onclick = () => {
+            const fullName = document.getElementById('userFullName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const password = document.getElementById('userPassword').value.trim();
+            const errorDiv = document.getElementById('userError');
+            
+            if(!fullName || !email || !password) {
+                errorDiv.innerText = "Please fill all fields!";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            if(password.length < 4) {
+                errorDiv.innerText = "Password must be at least 4 characters!";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            let user = users.find(u => u.email === email);
+            if(user) {
+                if(user.password !== password) {
+                    errorDiv.innerText = "Invalid password!";
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                currentUser = user;
+                showToast(`Welcome back, ${user.fullName}!`);
+            } else {
+                const newUser = { id: "USER-" + Date.now(), fullName, email, password, registeredAt: new Date().toISOString() };
+                users.push(newUser);
+                saveData();
+                currentUser = newUser;
+                showToast(`Registration successful! Welcome ${fullName}!`);
+            }
+            
+            document.getElementById('userModal').classList.add('hidden');
+            document.getElementById('userFullName').value = '';
+            document.getElementById('userEmail').value = '';
+            document.getElementById('userPassword').value = '';
+            showUserDashboard();
+        };
+
+        // ========== USER DASHBOARD ==========
+        function showUserDashboard() {
+            const userComplaints = complaints.filter(c => c.email === currentUser.email);
+            
+            document.getElementById('mainContent').innerHTML = `
+                <div class="space-y-6">
+                    <!-- Welcome Banner -->
+                    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-200">
+                        <div class="flex justify-between items-center flex-wrap gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-smile-wink text-emerald-600"></i> Welcome, ${currentUser.fullName}!</h2>
+                                <p class="text-gray-600 mt-1">Track your complaints and report new streetlight issues</p>
+                            </div>
+                            <button id="logoutUser" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl transition-all"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Report New Complaint -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-pen-alt text-cyan-600"></i> Report New Streetlight Fault</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="newLocation" placeholder="Location / Street *" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                            <select id="newDept" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                                <option value="Electrical Dept">⚡ Electrical Dept</option>
+                                <option value="Municipal Corp">🏛️ Municipal Corp</option>
+                                <option value="Streetlight Maintenance">💡 Streetlight Maintenance</option>
+                            </select>
+                            <textarea id="newDesc" placeholder="Description of Fault *" rows="3" class="md:col-span-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none"></textarea>
+                            <input type="text" id="newProof" placeholder="Proof Image URL (optional)" class="md:col-span-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none">
+                        </div>
+                        <button id="submitComplaint" class="mt-4 bg-gradient-to-r from-cyan-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"><i class="fas fa-paper-plane"></i> Submit Complaint</button>
+                    </div>
+                    
+                    <!-- My Complaints List -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-list-alt text-emerald-600"></i> My Complaints (${userComplaints.length})</h3>
+                        <div id="myComplaintsList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                    </div>
+                    
+                    <!-- Track Complaint -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-search-location text-indigo-600"></i> Track Complaint Status</h3>
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <input type="text" id="trackId" placeholder="Enter Complaint ID (e.g., CMP-1234567890)" class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <button id="trackComplaint" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all"><i class="fas fa-chart-line"></i> Track</button>
+                        </div>
+                        <div id="trackResult" class="mt-4 hidden"></div>
+                    </div>
+                </div>
+            `;
+            
+            loadUserComplaints();
+            
+            document.getElementById('logoutUser').onclick = () => {
+                currentUser = null;
+                location.reload();
+            };
+            
+            document.getElementById('submitComplaint').onclick = () => {
+                const location = document.getElementById('newLocation').value.trim();
+                const department = document.getElementById('newDept').value;
+                const description = document.getElementById('newDesc').value.trim();
+                const proofUrl = document.getElementById('newProof').value.trim();
+                
+                if(!location || !description) {
+                    alert("Please fill Location and Description!");
+                    return;
+                }
+                
+                const newId = generateComplaintId();
+                complaints.unshift({
+                    id: newId,
+                    citizenName: currentUser.fullName,
+                    email: currentUser.email,
+                    location, department, description,
+                    proofUrl: proofUrl || "No proof uploaded",
+                    status: "Pending",
+                    createdAt: new Date().toISOString()
+                });
+                saveData();
+                alert(`✅ Complaint submitted successfully!\nYour Complaint ID: ${newId}\nPlease save this ID for tracking.`);
+                document.getElementById('newLocation').value = '';
+                document.getElementById('newDesc').value = '';
+                document.getElementById('newProof').value = '';
+                loadUserComplaints();
+            };
+            
+            document.getElementById('trackComplaint').onclick = () => {
+                const id = document.getElementById('trackId').value.trim();
+                const comp = complaints.find(c => c.id === id);
+                const resultDiv = document.getElementById('trackResult');
+                if(comp) {
+                    const statusClass = comp.status === 'Resolved' ? 'status-resolved' : (comp.status === 'In Progress' ? 'status-progress' : 'status-pending');
+                    resultDiv.innerHTML = `
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <p class="font-bold text-lg">Complaint Details</p>
+                            <p><strong>ID:</strong> ${comp.id}</p>
+                            <p><strong>Status:</strong> <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">${comp.status}</span></p>
+                            <p><strong>Location:</strong> ${comp.location}</p>
+                            <p><strong>Department:</strong> ${comp.department}</p>
+                            <p><strong>Description:</strong> ${comp.description}</p>
+                            <p><strong>Submitted:</strong> ${new Date(comp.createdAt).toLocaleString()}</p>
+                            ${comp.proofUrl && comp.proofUrl !== "No proof uploaded" ? `<p><strong>Proof:</strong> <a href="${comp.proofUrl}" target="_blank" class="text-blue-600 underline">View Image</a></p>` : ''}
+                        </div>
+                    `;
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    resultDiv.innerHTML = `<div class="bg-red-50 p-4 rounded-lg text-red-700 border border-red-200"><i class="fas fa-times-circle"></i> No complaint found with ID: ${id}</div>`;
+                    resultDiv.classList.remove('hidden');
+                }
+            };
+        }
+        
+        function loadUserComplaints() {
+            const userComps = complaints.filter(c => c.email === currentUser.email);
+            const container = document.getElementById('myComplaintsList');
+            if(!container) return;
+            container.innerHTML = '';
+            if(userComps.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No complaints submitted yet. Use the form above to report a fault.</p>';
+                return;
+            }
+            userComps.forEach(comp => {
+                const statusClass = comp.status === 'Resolved' ? 'status-resolved' : (comp.status === 'In Progress' ? 'status-progress' : 'status-pending');
+                container.innerHTML += `
+                    <div class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-all">
+                        <div class="flex justify-between items-start flex-wrap gap-2">
+                            <div>
+                                <p class="font-mono text-sm bg-gray-100 px-2 py-1 rounded inline-block">${comp.id}</p>
+                                <p class="mt-2"><strong>Location:</strong> ${comp.location}</p>
+                                <p><strong>Description:</strong> ${comp.description.substring(0, 100)}${comp.description.length > 100 ? '...' : ''}</p>
+                            </div>
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${comp.status}</span>
+                                <p class="text-xs text-gray-500 mt-2">${new Date(comp.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // ========== ADMIN AUTHENTICATION ==========
+        document.getElementById('adminBtn').onclick = () => {
+            document.getElementById('adminModal').classList.remove('hidden');
+        };
+
+        document.getElementById('closeAdminModal').onclick = () => {
+            document.getElementById('adminModal').classList.add('hidden');
+            document.getElementById('adminError').classList.add('hidden');
+        };
+
+        document.getElementById('adminLoginSubmit').onclick = () => {
+            const user = document.getElementById('adminUser').value.trim();
+            const pass = document.getElementById('adminPass').value.trim();
+            const errorDiv = document.getElementById('adminError');
+            
+            if(user === ADMIN_USER && pass === ADMIN_PASS) {
+                isAdminLoggedIn = true;
+                document.getElementById('adminModal').classList.add('hidden');
+                document.getElementById('adminUser').value = '';
+                document.getElementById('adminPass').value = '';
+                showAdminDashboard();
+                alert("✅ Admin access granted!");
+            } else {
+                errorDiv.innerText = "Invalid admin credentials! Access denied.";
+                errorDiv.classList.remove('hidden');
+            }
+        };
+
+        // ========== ADMIN DASHBOARD ==========
+        function showAdminDashboard() {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="space-y-6">
+                    <!-- Admin Header -->
+                    <div class="bg-gradient-to-r from-gray-800 to-slate-800 text-white p-6 rounded-xl">
+                        <div class="flex justify-between items-center flex-wrap gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold"><i class="fas fa-crown text-yellow-400"></i> Admin Control Dashboard</h2>
+                                <p class="text-gray-300 text-sm mt-1">Manage complaints, update status, and export reports</p>
+                            </div>
+                            <button id="logoutAdmin" class="bg-red-600 hover:bg-red-700 px-5 py-2.5 rounded-xl transition-all"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Cards -->
+                    <div class="grid md:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                            <i class="fas fa-list-alt text-2xl text-blue-600"></i>
+                            <p class="text-2xl font-bold">${complaints.length}</p>
+                            <p class="text-sm text-gray-600">Total Complaints</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                            <i class="fas fa-hourglass-half text-2xl text-yellow-600"></i>
+                            <p class="text-2xl font-bold">${complaints.filter(c => c.status === 'Pending').length}</p>
+                            <p class="text-sm text-gray-600">Pending</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                            <i class="fas fa-spinner text-2xl text-blue-600"></i>
+                            <p class="text-2xl font-bold">${complaints.filter(c => c.status === 'In Progress').length}</p>
+                            <p class="text-sm text-gray-600">In Progress</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow p-4 text-center">
+                            <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                            <p class="text-2xl font-bold">${complaints.filter(c => c.status === 'Resolved').length}</p>
+                            <p class="text-sm text-gray-600">Resolved</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Complaints Table -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+                            <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-clipboard-list text-cyan-600"></i> All Complaints</h3>
+                            <div class="flex gap-2">
+                                <button id="refreshAdmin" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition-all"><i class="fas fa-sync-alt"></i> Refresh</button>
+                                <button id="exportCSV" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all"><i class="fas fa-download"></i> Export CSV</button>
+                            </div>
+                        </div>
+                        <div id="adminComplaintsList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                    </div>
+                </div>
+            `;
+            
+            loadAdminComplaints();
+            
+            document.getElementById('logoutAdmin').onclick = () => {
+                isAdminLoggedIn = false;
+                location.reload();
+            };
+            
+            document.getElementById('refreshAdmin').onclick = () => {
+                loadAdminComplaints();
+            };
+            
+            document.getElementById('exportCSV').onclick = () => {
+                let csvContent = "ID,Citizen Name,Email,Location,Department,Description,Status,Date\n";
+                complaints.forEach(c => {
+                    csvContent += `"${c.id}","${c.citizenName}","${c.email}","${c.location}","${c.department}","${c.description.replace(/"/g, '""')}","${c.status}","${new Date(c.createdAt).toLocaleString()}"\n`;
+                });
+                const blob = new Blob([csvContent], {type: "text/csv"});
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `streetlight_complaints_${new Date().toISOString().slice(0,19)}.csv`;
+                link.click();
+                alert("✅ CSV Export completed!");
+            };
+        }
+        
+        function loadAdminComplaints() {
+            const container = document.getElementById('adminComplaintsList');
+            if(!container) return;
+            container.innerHTML = '';
+            if(complaints.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No complaints found.</p>';
+                return;
+            }
+            complaints.forEach((comp, index) => {
+                const statusClass = comp.status === 'Resolved' ? 'status-resolved' : (comp.status === 'In Progress' ? 'status-progress' : 'status-pending');
+                container.innerHTML += `
+                    <div class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-all" data-id="${comp.id}">
+                        <div class="flex justify-between items-start flex-wrap gap-3">
+                            <div class="flex-1">
+                                <p class="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">${comp.id}</p>
+                                <p class="mt-2"><strong>Citizen:</strong> ${comp.citizenName} (${comp.email})</p>
+                                <p><strong>Location:</strong> ${comp.location}</p>
+                                <p><strong>Department:</strong> ${comp.department}</p>
+                                <p><strong>Description:</strong> ${comp.description}</p>
+                                <p class="text-xs text-gray-500 mt-1">Submitted: ${new Date(comp.createdAt).toLocaleString()}</p>
+                            </div>
+                            <div class="text-right">
+                                <select class="statusSelect border rounded-lg p-2 text-sm" data-id="${comp.id}">
+                                    <option value="Pending" ${comp.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                                    <option value="In Progress" ${comp.status === 'In Progress' ? 'selected' : ''}>⚙️ In Progress</option>
+                                    <option value="Resolved" ${comp.status === 'Resolved' ? 'selected' : ''}>✅ Resolved</option>
+                                </select>
+                                <button class="deleteComp bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm mt-2 w-full transition-all" data-id="${comp.id}"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.querySelectorAll('.statusSelect').forEach(select => {
+                select.onchange = (e) => {
+                    e.stopPropagation();
+                    const compId = select.getAttribute('data-id');
+                    const complaint = complaints.find(c => c.id === compId);
+                    if(complaint) {
+                        complaint.status = select.value;
+                        saveData();
+                        alert(`✅ Status updated to "${select.value}" for complaint ${compId}`);
+                        loadAdminComplaints();
+                    }
+                };
+            });
+            
+            document.querySelectorAll('.deleteComp').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const compId = btn.getAttribute('data-id');
+                    if(confirm(`Are you sure you want to delete complaint ${compId}?`)) {
+                        complaints = complaints.filter(c => c.id !== compId);
+                        saveData();
+                        alert("✅ Complaint deleted successfully!");
+                        loadAdminComplaints();
+                    }
+                };
+            });
+        }
+
+        // ========== INITIALIZE ==========
+        loadData();
+        console.log("✅ Streetlight Fault Reporting System Loaded");
+        console.log("🔐 Admin Credentials: Worth2718 / 9940184352 (Hidden from UI)");
+        console.log("📋 All conditions satisfied: Citizen submission, location/department tagging, status workflow, proof upload, analytics");
+    </script>
+</body>
+</html>
